@@ -1,16 +1,3 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import z, { email } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,11 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@radix-ui/react-label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import GoogleIcon from "@/components/ui/icons/google-icon";
+import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { error } from "console";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import z from "zod";
 
 const formSchema = z.object({
   email: z.email("Email inválido!"),
@@ -43,6 +41,32 @@ const SignInForm = () => {
       password: "",
     },
   });
+
+  const handleSignInWithGoogle = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+        },
+        onError: (ctx) => {
+          if (ctx.error.code == "USER_NOT_FOUND") {
+            toast.error("Email não encontrado.");
+            return form.setError("email", {
+              message: "E-mail já cadastrado.",
+            });
+          }
+          if (ctx.error.code == "INVALID_EMAIL_OR_PASSWORD") {
+            toast.error("Email ou senha inválidos.");
+            return form.setError("email", {
+              message: "Email ou senha inválidos.",
+            });
+          }
+          toast.error(ctx.error.message);
+        },
+      },
+    });
+  };
 
   async function onSubmit(values: FormValues) {
     await authClient.signIn.email({
@@ -112,8 +136,19 @@ const SignInForm = () => {
                 )}
               />
             </CardContent>
-            <CardFooter>
-              <Button type="submit">Entrar</Button>
+            <CardFooter className="flex flex-col gap-2">
+              <Button type="submit" className="w-full">
+                Entrar
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                type="button"
+                onClick={handleSignInWithGoogle}
+              >
+                <GoogleIcon />
+                Entrar com Google
+              </Button>
             </CardFooter>
           </form>
         </Form>
