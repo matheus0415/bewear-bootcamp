@@ -1,6 +1,8 @@
+import CategorySelector from "@/components/common/category-selector";
 import Header from "@/components/common/header";
 import ProductList from "@/components/common/product-list";
 import { db } from "@/db";
+import { Cat } from "lucide-react";
 import Image from "next/image";
 
 const Home = async () => {
@@ -9,6 +11,8 @@ const Home = async () => {
       variants: true,
     },
   });
+
+  const categories = await db.query.categoryTable.findMany({});
 
   return (
     <>
@@ -26,6 +30,10 @@ const Home = async () => {
         </div>
 
         <ProductList title="Mais Vendidos" products={products} />
+
+        <div className="px-5">
+          <CategorySelector categories={categories} />
+        </div>
 
         <div className="px-5">
           <Image
