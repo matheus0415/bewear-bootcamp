@@ -21,6 +21,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@radix-ui/react-label";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
@@ -42,6 +45,8 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 const SignUpForm = () => {
+  const router = useRouter();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,9 +57,26 @@ const SignUpForm = () => {
     },
   });
 
-  function onSubmit(values: FormValues) {
-    console.log("Formulario Valido e enviado");
-    console.log(values);
+  async function onSubmit(values: FormValues) {
+    await authClient.signUp.email({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+        },
+        onError: (error) => {
+          if (error.error.code == "USER_ALREADY_EXISTS") {
+            toast.error("Email já cadastrado.");
+            form.setError("email", {
+              message: "E-mail já cadastrado.",
+            });
+          }
+          toast.error(error.error.message);
+        },
+      },
+    });
   }
 
   return (
