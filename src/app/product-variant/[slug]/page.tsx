@@ -1,15 +1,14 @@
 import Footer from "@/components/common/footer";
 import Header from "@/components/common/header";
 import ProductList from "@/components/common/product-list";
-import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { productTable, productVariantTable } from "@/db/schema";
 import { formatCentsToBRL } from "@/helpers/money";
 import { eq } from "drizzle-orm";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import ProductActions from "../components/product-actions";
 import VariantSelector from "../components/variant-selector";
-import QuantitySelector from "../components/quantity-selector";
 
 interface ProductVariantPageProps {
   params: Promise<{ slug: string }>;
@@ -72,18 +71,7 @@ const ProductVariantPage = async ({ params }: ProductVariantPageProps) => {
         </div>
 
         {/* Quantidade */}
-        <div className="px-5">
-          <QuantitySelector />
-        </div>
-        {/* Buttons */}
-        <div className="flex flex-col space-y-4 px-5">
-          <Button className="rounded-full" size="lg" variant="outline">
-            Adicionar à sacola
-          </Button>
-          <Button className="rounded-full" size="lg">
-            Comprar agora
-          </Button>
-        </div>
+        <ProductActions productVariantId={productVariant.id} />
 
         {/*  */}
         <div className="px-5">
