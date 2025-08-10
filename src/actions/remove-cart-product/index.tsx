@@ -31,8 +31,8 @@ export const removeProductFromCart = async (data: z.infer<typeof removeProductFr
   if (!cartItem) {
     throw new Error("Product variant not found in cart");
   }
-  
-  const cartDoesNotBelongToUser = cartItem?.cart.userId !== session.user.id;
+
+  const cartDoesNotBelongToUser = cartItem.cart.userId !== session.user.id;
 
   if (cartDoesNotBelongToUser) {
     throw new Error("User not authorized to remove this item");
