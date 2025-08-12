@@ -1,7 +1,15 @@
-import { getCart } from "@/actions/get-cart";
 import { useQuery } from "@tanstack/react-query";
 import { ShoppingBasketIcon } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+import { getCart } from "@/actions/get-cart";
+import { formatCentsToBRL } from "@/helpers/money";
+import { useCart } from "@/hooks/queries/use-cart";
+
 import { Button } from "../ui/button";
+import { ScrollArea } from "../ui/scroll-area";
+import { Separator } from "../ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -9,12 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import Image from "next/image";
 import CartItem from "./cart-item";
-import { ScrollArea } from "../ui/scroll-area";
-import { Separator } from "../ui/separator";
-import { formatCentsToBRL } from "@/helpers/money";
-import { useCart } from "@/hooks/queries/use-cart";
 
 const Cart = () => {
   const { data: cart } = useCart();
@@ -70,8 +73,10 @@ const Cart = () => {
                 <p>{formatCentsToBRL(cart?.totalPriceInCents ?? 0)}</p>
               </div>
 
-              <Button className="mt-5 rounded-full" size="lg">
-                Finalizar compra
+              <Button className="mt-5 rounded-full" size="lg" asChild>
+                <Link href="/cart/identification">
+                  Finalizar compra
+                </Link>
               </Button>
             </div>
           )}

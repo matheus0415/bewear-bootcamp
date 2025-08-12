@@ -1,15 +1,13 @@
-import { addProductToCart } from "@/actions/add-cart-product";
-import { decreaseCartProductQuantity } from "@/actions/decrease-cart-product-quantity";
-import { removeProductFromCart } from "@/actions/remove-cart-product";
-import { formatCentsToBRL } from "@/helpers/money";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { useRemoveProductFromCart } from "@/hooks/mutations/use-remove-product-from-cart";
+
+import { formatCentsToBRL } from "@/helpers/money";
 import { useDecreaseCartProductQuantity } from "@/hooks/mutations/use-decrease-cart-product";
 import { useIncreaseCartProductQuantity } from "@/hooks/mutations/use-increase-cart-product";
+import { useRemoveProductFromCart } from "@/hooks/mutations/use-remove-product-from-cart";
+
+import { Button } from "../ui/button";
 
 interface CartItemProps {
   id: string;
@@ -31,16 +29,18 @@ const CartItem = ({
   quantity,
 }: CartItemProps) => {
   const removeProductFromCartMutation = useRemoveProductFromCart(id);
-  const decreaseCartProductQuantityMutation = useDecreaseCartProductQuantity(id);
-  const increaseCartProductQuantityMutation = useIncreaseCartProductQuantity(productVariantId);
+  const decreaseCartProductQuantityMutation =
+    useDecreaseCartProductQuantity(id);
+  const increaseCartProductQuantityMutation =
+    useIncreaseCartProductQuantity(productVariantId);
 
   const handleDeleteClick = () => {
     removeProductFromCartMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success("Produto removido do carrinho.")
+        toast.success("Produto removido do carrinho.");
       },
       onError: (error) => {
-        toast.error("Erro ao remover produto do carrinho.")
+        toast.error("Erro ao remover produto do carrinho.");
       },
     });
   };
@@ -48,10 +48,10 @@ const CartItem = ({
   const handleIncreaseQuantityClick = () => {
     increaseCartProductQuantityMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success("Produto adicionado ao carrinho.")
+        toast.success("Produto adicionado ao carrinho.");
       },
       onError: (error) => {
-        toast.error("Erro ao adicionar produto ao carrinho.")
+        toast.error("Erro ao adicionar produto ao carrinho.");
       },
     });
   };
@@ -59,13 +59,13 @@ const CartItem = ({
   const handleDecreaseQuantityClick = () => {
     decreaseCartProductQuantityMutation.mutate(undefined, {
       onSuccess: () => {
-        toast.success("Quantidade do produto diminuida.")
+        toast.success("Quantidade do produto diminuida.");
       },
       onError: (error) => {
-        toast.error("Erro ao diminuir quantidade do produto.")
+        toast.error("Erro ao diminuir quantidade do produto.");
       },
-    })
-  }
+    });
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -84,11 +84,19 @@ const CartItem = ({
           </p>
 
           <div className="flex w-[100px] items-center justify-between rounded-lg border p-1">
-            <Button className="h-4 w-4" variant="ghost" onClick={() => handleDecreaseQuantityClick()}>
+            <Button
+              className="h-4 w-4"
+              variant="ghost"
+              onClick={() => handleDecreaseQuantityClick()}
+            >
               <MinusIcon />
             </Button>
             <p className="text-xs font-medium">{quantity}</p>
-            <Button className="h-4 w-4" variant="ghost" onClick={() => handleIncreaseQuantityClick()}>
+            <Button
+              className="h-4 w-4"
+              variant="ghost"
+              onClick={() => handleIncreaseQuantityClick()}
+            >
               <PlusIcon />
             </Button>
           </div>

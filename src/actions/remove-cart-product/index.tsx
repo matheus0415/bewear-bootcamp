@@ -1,15 +1,18 @@
 "use server";
 
-import { auth } from "@/lib/auth";
-
-import { headers } from "next/headers";
-import { db } from "@/db";
-import { cartItemTable, cartTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { removeProductFromCartSchema } from "./schema";
+import { headers } from "next/headers";
 import z from "zod";
 
-export const removeProductFromCart = async (data: z.infer<typeof removeProductFromCartSchema>) => {
+import { db } from "@/db";
+import { cartItemTable } from "@/db/schema";
+import { auth } from "@/lib/auth";
+
+import { removeProductFromCartSchema } from "./schema";
+
+export const removeProductFromCart = async (
+  data: z.infer<typeof removeProductFromCartSchema>,
+) => {
   removeProductFromCartSchema.safeParse(data);
 
   const session = await auth.api.getSession({
@@ -19,12 +22,11 @@ export const removeProductFromCart = async (data: z.infer<typeof removeProductFr
   if (!session?.user) {
     throw new Error("User not authenticated");
   }
-  
+
   const cartItem = await db.query.cartItemTable.findFirst({
-    where: (cartItem, { eq }) =>
-      eq(cartItem.id, data.cartItemId),
+    where: (cartItem, { eq }) => eq(cartItem.id, data.cartItemId),
     with: {
-        cart: true,
+      cart: true,
     },
   });
 
