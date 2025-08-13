@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { PatternFormat } from "react-number-format";
 import z from "zod";
@@ -13,13 +13,14 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-address";
+import { useShippingAddresses } from "@/hooks/queries/use-shipping-addresses";
 
 const addressFormSchema = z.object({
   email: z.email("Email inválido"),
@@ -50,6 +51,17 @@ type AddressFormValues = z.infer<typeof addressFormSchema>;
 const Addresses = () => {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const createShippingAddressMutation = useCreateShippingAddress();
+  const { data: addressesData, isLoading } = useShippingAddresses();
+
+  useEffect(() => {
+    if (
+      addressesData?.data &&
+      addressesData.data.length > 0 &&
+      !selectedAddress
+    ) {
+      setSelectedAddress(addressesData.data[0].id);
+    }
+  }, [addressesData?.data, selectedAddress]);
 
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
@@ -73,7 +85,7 @@ const Addresses = () => {
     try {
       await createShippingAddressMutation.mutateAsync(values);
       form.reset();
-      setSelectedAddress(null);
+      setSelectedAddress("add-new");
     } catch (error) {
       console.error(error);
     }
@@ -91,22 +103,55 @@ const Addresses = () => {
           value={selectedAddress}
           onValueChange={(value) => setSelectedAddress(value)}
         >
-          <Card>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="add-new" id="add-new" />
-                <Label htmlFor="add-new">Adicionar novo endereço</Label>
-              </div>
-            </CardContent>
-          </Card>
-        </RadioGroup>
+          {isLoading ? (
+            <div className="py-4 text-center">Carregando endereços...</div>
+          ) : (
+            <>
+              {addressesData?.data &&
+                addressesData.data.length > 0 &&
+                addressesData.data.map((address) => (
+                  <Card key={address.id} className="mb-3">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={address.id} id={address.id} />
+                        <Label
+                          htmlFor={address.id}
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="text-sm">
+                            {address.firstName} {address.lastName} -{" "}
+                            {address.address}, {address.number}
+                            {address.complement &&
+                              `, ${address.complement}`} -{" "}
+                            {address.neighborhood}, {address.city} -{" "}
+                            {address.state} - CEP: {address.cep}
+                          </div>
+                        </Label>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
 
+              <Card>
+                <CardContent>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="add-new" id="add-new" />
+                    <Label htmlFor="add-new" className="cursor-pointer">
+                      Adicionar novo endereço
+                    </Label>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </RadioGroup>
         {selectedAddress === "add-new" && (
-          <Card className="mt-4">
-            <CardHeader>
+          <div className="mt-4">
+            <Separator className="my-4" />
+            <div className="pb-5">
               <CardTitle>Adicionar novo</CardTitle>
-            </CardHeader>
-            <CardContent>
+            </div>
+            <div>
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
@@ -117,7 +162,6 @@ const Addresses = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input placeholder="Email" {...field} />
                         </FormControl>
@@ -132,7 +176,6 @@ const Addresses = () => {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Primeiro Nome</FormLabel>
                           <FormControl>
                             <Input placeholder="Primeiro Nome" {...field} />
                           </FormControl>
@@ -145,7 +188,6 @@ const Addresses = () => {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sobrenome</FormLabel>
                           <FormControl>
                             <Input placeholder="Sobrenome" {...field} />
                           </FormControl>
@@ -161,7 +203,6 @@ const Addresses = () => {
                       name="cpfCnpj"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>CPF/CNPJ</FormLabel>
                           <FormControl>
                             <PatternFormat
                               customInput={Input}
@@ -184,7 +225,6 @@ const Addresses = () => {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Celular</FormLabel>
                           <FormControl>
                             <PatternFormat
                               customInput={Input}
@@ -209,7 +249,6 @@ const Addresses = () => {
                     name="cep"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <PatternFormat
                             customInput={Input}
@@ -233,7 +272,6 @@ const Addresses = () => {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Endereço</FormLabel>
                         <FormControl>
                           <Input placeholder="Endereço" {...field} />
                         </FormControl>
@@ -248,7 +286,6 @@ const Addresses = () => {
                       name="number"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Número</FormLabel>
                           <FormControl>
                             <Input placeholder="Número" {...field} />
                           </FormControl>
@@ -261,7 +298,6 @@ const Addresses = () => {
                       name="complement"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Complemento</FormLabel>
                           <FormControl>
                             <Input placeholder="Complemento" {...field} />
                           </FormControl>
@@ -277,7 +313,6 @@ const Addresses = () => {
                       name="neighborhood"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Bairro</FormLabel>
                           <FormControl>
                             <Input placeholder="Bairro" {...field} />
                           </FormControl>
@@ -290,7 +325,6 @@ const Addresses = () => {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cidade</FormLabel>
                           <FormControl>
                             <Input placeholder="Cidade" {...field} />
                           </FormControl>
@@ -303,7 +337,6 @@ const Addresses = () => {
                       name="state"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Estado</FormLabel>
                           <FormControl>
                             <Input placeholder="Estado" {...field} />
                           </FormControl>
@@ -314,12 +347,12 @@ const Addresses = () => {
                   </div>
 
                   <Button type="submit" className="w-full">
-                    Continuar com o pagamento
+                    Adicionar novo endereço
                   </Button>
                 </form>
               </Form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

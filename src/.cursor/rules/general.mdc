@@ -40,3 +40,4 @@ Use componentes da biblioteca shadcn/ui o máximo possível ao criar/modificar c
 - Sempre crie hooks customizados para queries e mutations do React Query.
 - Sempre use os [use-cart.tsx](mdc:src/hooks/queries/use-cart.ts) e [use-increase-cart-product.ts](mdc:src/hooks/mutations/use-increase-cart-product.ts) como referência.
 - Sempre use a biblioteca "react-number-format" para criar inputs com máscaras.
+- Sempre crie e exporte uma função que retore a query key de uma query e mutation key de uma mutation. Sempre use os [use-cart.tsx](mdc:src/hooks/queries/use-cart.ts) e [use-increase-cart-product.ts](mdc:src/hooks/mutations/use-increase-cart-product.ts) como referência.

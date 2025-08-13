@@ -1,7 +1,7 @@
 "use client";
 
-import { db } from "@/db";
 import { productTable, productVariantTable } from "@/db/schema";
+
 import ProductItem from "./product-item";
 
 interface ProductListProps {

@@ -1,12 +1,14 @@
+import { eq } from "drizzle-orm";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+
 import Footer from "@/components/common/footer";
 import Header from "@/components/common/header";
 import ProductList from "@/components/common/product-list";
 import { db } from "@/db";
 import { productTable, productVariantTable } from "@/db/schema";
 import { formatCentsToBRL } from "@/helpers/money";
-import { eq } from "drizzle-orm";
-import Image from "next/image";
-import { notFound } from "next/navigation";
+
 import ProductActions from "../components/product-actions";
 import VariantSelector from "../components/variant-selector";
 

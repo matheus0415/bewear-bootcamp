@@ -1,3 +1,9 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,11 +24,6 @@ import {
 import GoogleIcon from "@/components/ui/icons/google-icon";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import z from "zod";
 
 const formSchema = z.object({
   email: z.email("Email inválido!"),
