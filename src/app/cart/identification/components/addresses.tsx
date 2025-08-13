@@ -1,9 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { PatternFormat } from "react-number-format";
+import { toast } from "sonner";
 import z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -13,14 +14,16 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
+import { shippingAddressTable } from "@/db/schema";
 import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-address";
-import { useShippingAddresses } from "@/hooks/queries/use-shipping-addresses";
+import { useUserAddresses } from "@/hooks/queries/use-user-addresses";
 
 const addressFormSchema = z.object({
   email: z.email("Email inválido"),
@@ -48,20 +51,16 @@ const addressFormSchema = z.object({
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
 
-const Addresses = () => {
+interface AddressesProps {
+  shippingAddresses: (typeof shippingAddressTable.$inferSelect)[];
+}
+
+const Addresses = ({ shippingAddresses }: AddressesProps) => {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const createShippingAddressMutation = useCreateShippingAddress();
-  const { data: addressesData, isLoading } = useShippingAddresses();
-
-  useEffect(() => {
-    if (
-      addressesData?.data &&
-      addressesData.data.length > 0 &&
-      !selectedAddress
-    ) {
-      setSelectedAddress(addressesData.data[0].id);
-    }
-  }, [addressesData?.data, selectedAddress]);
+  const { data: addresses, isLoading } = useUserAddresses({
+    initialData: shippingAddresses,
+  });
 
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
@@ -83,10 +82,15 @@ const Addresses = () => {
 
   const onSubmit = async (values: AddressFormValues) => {
     try {
-      await createShippingAddressMutation.mutateAsync(values);
+      const newAddress =
+        await createShippingAddressMutation.mutateAsync(values);
+      toast.success("Endereço criado com sucesso!");
       form.reset();
-      setSelectedAddress("add-new");
+      setSelectedAddress(newAddress.id);
+
+      toast.success("Endereço vinculado ao carrinho!");
     } catch (error) {
+      toast.error("Erro ao criar endereço. Tente novamente.");
       console.error(error);
     }
   };
@@ -107,30 +111,28 @@ const Addresses = () => {
             <div className="py-4 text-center">Carregando endereços...</div>
           ) : (
             <>
-              {addressesData?.data &&
-                addressesData.data.length > 0 &&
-                addressesData.data.map((address) => (
-                  <Card key={address.id} className="mb-3">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value={address.id} id={address.id} />
-                        <Label
-                          htmlFor={address.id}
-                          className="flex-1 cursor-pointer"
-                        >
-                          <div className="text-sm">
-                            {address.firstName} {address.lastName} -{" "}
-                            {address.address}, {address.number}
-                            {address.complement &&
-                              `, ${address.complement}`} -{" "}
-                            {address.neighborhood}, {address.city} -{" "}
-                            {address.state} - CEP: {address.cep}
-                          </div>
-                        </Label>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              {addresses?.map((address) => (
+                <Card key={address.id} className="mb-3">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value={address.id} id={address.id} />
+                      <Label
+                        htmlFor={address.id}
+                        className="flex-1 cursor-pointer"
+                      >
+                        <div className="text-sm">
+                          {address.recipientName} - {address.street},
+                          {address.number}
+                          {address.complement &&
+                            `, ${address.complement}`} - {address.neighborhood},
+                          {address.city} - {address.state} - CEP:
+                          {address.zipCode}
+                        </div>
+                      </Label>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
 
               <Card>
                 <CardContent>
@@ -162,6 +164,7 @@ const Addresses = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input placeholder="Email" {...field} />
                         </FormControl>
@@ -176,6 +179,7 @@ const Addresses = () => {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Primeiro Nome</FormLabel>
                           <FormControl>
                             <Input placeholder="Primeiro Nome" {...field} />
                           </FormControl>
@@ -188,6 +192,7 @@ const Addresses = () => {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Sobrenome</FormLabel>
                           <FormControl>
                             <Input placeholder="Sobrenome" {...field} />
                           </FormControl>
@@ -203,6 +208,7 @@ const Addresses = () => {
                       name="cpfCnpj"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>CPF/CNPJ</FormLabel>
                           <FormControl>
                             <PatternFormat
                               customInput={Input}
@@ -225,6 +231,7 @@ const Addresses = () => {
                       name="phone"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Celular</FormLabel>
                           <FormControl>
                             <PatternFormat
                               customInput={Input}
@@ -249,6 +256,7 @@ const Addresses = () => {
                     name="cep"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <PatternFormat
                             customInput={Input}
@@ -272,6 +280,7 @@ const Addresses = () => {
                     name="address"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Endereço</FormLabel>
                         <FormControl>
                           <Input placeholder="Endereço" {...field} />
                         </FormControl>
@@ -286,6 +295,7 @@ const Addresses = () => {
                       name="number"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Número</FormLabel>
                           <FormControl>
                             <Input placeholder="Número" {...field} />
                           </FormControl>
@@ -298,6 +308,7 @@ const Addresses = () => {
                       name="complement"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Complemento</FormLabel>
                           <FormControl>
                             <Input placeholder="Complemento" {...field} />
                           </FormControl>
@@ -313,6 +324,7 @@ const Addresses = () => {
                       name="neighborhood"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Bairro</FormLabel>
                           <FormControl>
                             <Input placeholder="Bairro" {...field} />
                           </FormControl>
@@ -325,6 +337,7 @@ const Addresses = () => {
                       name="city"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Cidade</FormLabel>
                           <FormControl>
                             <Input placeholder="Cidade" {...field} />
                           </FormControl>
@@ -337,6 +350,7 @@ const Addresses = () => {
                       name="state"
                       render={({ field }) => (
                         <FormItem>
+                          <FormLabel>Estado</FormLabel>
                           <FormControl>
                             <Input placeholder="Estado" {...field} />
                           </FormControl>
