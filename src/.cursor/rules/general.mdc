@@ -34,7 +34,7 @@ Use componentes da biblioteca shadcn/ui o máximo possível ao criar/modificar c
 - Quando necessário, crie componentes e funções reutilizaveis para reduzir a duplicidade de código.
 - Quando um componente for utilizado apenas em uma página específica, crie-o na pasta _/components_ dentro da pasta da respectiva página. Veja o exemplo de [addresses.tsx](mdc:src/app/cart/identification/components/addresses.tsx).
 - As Servers Actions devem ser armazenadas em 'src/actions' (siga o padrão de nomenclatura das já existentes). Cada server action deve ficar em uma pasta com dois arquivos: index.ts e schema.ts. Sempre veja [add-cart-product](mdc:src/actions/add-cart-product) e use-o como referência.
-- Sempre que for necessário interagir com o banco de dados, use o [index.ts](mdc:src/db/index.ts).
+- Sempre que for necessário interagir com o banco de dados, use o [index.ts](mdc:src/db/index.ts) e veja o arquivo[schema.ts](mdc:src\db\schema.ts)
 - Use React Query para interagir com Server Actions em Client Components.
   Sempre use os componentes [cart-item.tsx](mdc:src/components/common/cart-item.tsx)[cart.tsx](mdc:src\components\common\cart.tsx) como exemplo.
 - Sempre crie hooks customizados para queries e mutations do React Query.

@@ -19,14 +19,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useCreateShippingAddress } from "@/hooks/mutations/use-create-shipping-address";
 
 const addressFormSchema = z.object({
   email: z.email("Email inválido"),
   firstName: z.string().min(1, "Nome é obrigatório"),
   lastName: z.string().min(1, "Sobrenome é obrigatório"),
-  cpfCnpj: z.string().min(11, "CPF/CNPJ é obrigatório"),
-  phone: z.string().min(10, "Celular é obrigatório"),
-  cep: z.string().min(8, "CEP é obrigatório"),
+  cpfCnpj: z.string().refine((value) => {
+    const cleanValue = value.replace(/\D/g, "");
+    return cleanValue.length === 11 || cleanValue.length === 14;
+  }, "CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos"),
+  phone: z.string().refine((value) => {
+    const cleanValue = value.replace(/\D/g, "");
+    return cleanValue.length >= 10 && cleanValue.length <= 11;
+  }, "Celular deve ter 10 ou 11 dígitos"),
+  cep: z.string().refine((value) => {
+    const cleanValue = value.replace(/\D/g, "");
+    return cleanValue.length === 8;
+  }, "CEP deve ter 8 dígitos"),
   address: z.string().min(1, "Endereço é obrigatório"),
   number: z.string().min(1, "Número é obrigatório"),
   complement: z.string().optional(),
@@ -39,6 +49,7 @@ type AddressFormValues = z.infer<typeof addressFormSchema>;
 
 const Addresses = () => {
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const createShippingAddressMutation = useCreateShippingAddress();
 
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressFormSchema),
@@ -58,8 +69,14 @@ const Addresses = () => {
     },
   });
 
-  const onSubmit = (values: AddressFormValues) => {
-    console.log(values);
+  const onSubmit = async (values: AddressFormValues) => {
+    try {
+      await createShippingAddressMutation.mutateAsync(values);
+      form.reset();
+      setSelectedAddress(null);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -153,8 +170,9 @@ const Addresses = () => {
                               onValueChange={(values) => {
                                 field.onChange(values.value);
                               }}
-                              format="##.###.###-##"
+                              format="###.###.###-##"
                               mask="_"
+                              allowEmptyFormatting={false}
                             />
                           </FormControl>
                           <FormMessage />
@@ -177,6 +195,7 @@ const Addresses = () => {
                               }}
                               format="(##) #####-####"
                               mask="_"
+                              allowEmptyFormatting={false}
                             />
                           </FormControl>
                           <FormMessage />
@@ -201,6 +220,7 @@ const Addresses = () => {
                             }}
                             format="#####-###"
                             mask="_"
+                            allowEmptyFormatting={false}
                           />
                         </FormControl>
                         <FormMessage />
